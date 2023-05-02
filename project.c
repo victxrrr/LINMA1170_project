@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gmshc.h>
+#ifdef __linux__
+  #include "../gmsh-sdk/include/gmshc.h"
+#else
+  #include "gmshc.h"
+#endif
 #include "matrix.h"
 #include "elasticity.h"
 #include "math.h"
@@ -36,7 +40,7 @@ int main (int argc, char *argv[]) {
   int ierr;
   gmshInitialize(argc, argv, 0, 0, &ierr);
 
-  designTuningFork(6e-3, 11e-3, 38e-3, 82e-3, 0.3, NULL);
+  designTuningFork(1e-4, 11e-3, 38e-3, 10e-3, 0.9, NULL);
   
   // Number of vibration modes to find
   int k = atoi(argv[1]);
