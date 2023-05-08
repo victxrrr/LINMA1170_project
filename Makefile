@@ -62,12 +62,12 @@ endif
 
 all: $(TARGET)
 
-linux_target: matrix.c lu.c elasticity.c eigen.c design.c project.c
+linux_target: util/matrix.c util/lu.c util/elasticity.c util/eigen.c geometries/design.c main/project.c
 	$(CC) $(CFLAGS) -o $@ $^ -lm -Wno-unused-variable -Wno-unused-function ../gmsh-sdk/lib/libgmsh.so -Wl,-rpath,../gmsh-sdk/lib
 	./$@ 1.0 files/out.txt
 	rm -f $@
 
-windows_target: matrix.c lu.c elasticity.c eigen.c design.c project.c
+windows_target: util/matrix.c util/lu.c util/elasticity.c util/eigen.c geometries/design.c main/project.c
 	$(CC) $(CFLAGS) -o $@ $^ -lm -Wno-unused-variable -Wno-unused-function ../gmsh-sdk/lib/gmsh-4.11.dll
 	./$@ 1.0 files/out.txt
 	rm -f $@
