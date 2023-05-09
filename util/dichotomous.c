@@ -48,6 +48,38 @@ void getSecantParam(double *exParam, double *currentParam, double *newParam, dou
 }
 
 
+double *loadInitSecantParam(double *param0, double *param1, double(*myFunction)(double *), double *intervalBound1, double *intervalBound2, int nParam, int nMax) {
+    
+    // Initialize the array to return.
+    double *evals = malloc(2*sizeof(double)); 
+
+    // Getting the initial parameters.
+    getDichotomousParam(param1, intervalBound1, intervalBound2, nParam);
+    evals[1] = myFunction(param1);
+
+    // Finding the optimal parameters.
+    int nIter = 0;
+    while (nIter < nMax) {
+        // Updating the interval bounds.
+        if (evals[1] * myFunction(intervalBound1) > 0) {
+            memcpy(intervalBound1, param1, nParam*sizeof(double));
+        } else {
+            memcpy(intervalBound2, param1, nParam*sizeof(double));
+        }
+        // Updating parameters.
+        memcpy(param0, param1, nParam*sizeof(double));
+        evals[0] = evals[1];
+        getDichotomousParam(param1, intervalBound1, intervalBound2, nParam);
+        evals[1]  = myFunction(param1);
+        nIter++;
+    }
+
+    //fprintf(stderr, "The number of iteration is : %d\n", nIter);
+
+    return evals;
+}
+
+
 double *secant(double(*myFunction)(double *), double *param0, double *param1, double eval0, double eval1, int nParam, int nMax, double tol) {
 
     // Setting the initial parameters.
