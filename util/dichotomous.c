@@ -48,7 +48,7 @@ void getSecantParam(double *exParam, double *currentParam, double *newParam, dou
 }
 
 
-double *loadInitSecantParam(double *param0, double *param1, double(*myFunction)(double *), double *intervalBound1, double *intervalBound2, int nParam, int nMax) {
+double *loadSecantInitParam(double *param0, double *param1, double(*myFunction)(double *), double *intervalBound1, double *intervalBound2, int nParam, int nMax) {
     
     // Initialize the array to return.
     double *evals = malloc(2*sizeof(double)); 
