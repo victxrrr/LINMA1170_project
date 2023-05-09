@@ -58,7 +58,7 @@ double *loadSecantInitParam(double *param0, double *param1, double(*myFunction)(
     evals[1] = myFunction(param1);
 
     // Finding the optimal parameters.
-    int nIter = 0;
+    int nIter = 1;
     while (nIter < nMax) {
         // Updating the interval bounds.
         if (evals[1] * myFunction(intervalBound1) > 0) {
