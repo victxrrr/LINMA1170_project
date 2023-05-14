@@ -12,6 +12,7 @@
 #include "lu.h"
 #include "design.h"
 #include "eigen.h"
+#include <time.h>
 
  #define max(a,b) \
    ({ __typeof__ (a) _a = (a); \
@@ -40,7 +41,7 @@ int main (int argc, char *argv[]) {
   int ierr;
   gmshInitialize(argc, argv, 0, 0, &ierr);
 
-  designTuningFork(1e-4, 11e-3, 38e-3, 10e-3, 0.9, NULL);
+  designTuningFork4(5e-3, 10e-3, 2e-2, 4e-2, 1.0, NULL);
   
   // Number of vibration modes to find
   int k = atoi(argv[1]);
@@ -58,6 +59,8 @@ int main (int argc, char *argv[]) {
   Matrix *K_new;
   Matrix *M_new;
   remove_bnd_lines(K, M, boundary_nodes, n_boundary_nodes, &K_new, &M_new, NULL);
+
+  clock_t begin = clock();
 
   // Compute M := K^{-1} M 
   int n = K_new->n;
@@ -83,6 +86,7 @@ int main (int argc, char *argv[]) {
     fprintf(file, "%.9lf ", freq);
 
     printf("lambda = %.9e, f = %.3lf\n", lambda, freq);
+
     // Deflate matrix
     for(int i = 0; i < A->m; i++)
       for(int j = 0; j < A->n; j++)
@@ -102,6 +106,10 @@ int main (int argc, char *argv[]) {
     }
     visualize_in_gmsh(vall, K->m/2);
   }
+
+  clock_t end = clock();
+  double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+  printf("time = %.3lf\n", time_spent);
 
   fclose(file);
 

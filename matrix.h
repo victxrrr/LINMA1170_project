@@ -18,6 +18,13 @@ typedef struct BandMatrix {
 	double ** a;	// tableau 1D de m pointeurs vers chaque ligne, pour pouvoir appeler a[i][j]
 } BandMatrix;
 
+typedef struct Problem {
+	Matrix * K;
+	Matrix * M;
+	int n;
+	int k;
+	double *w;
+} Problem;
 
 Matrix * allocate_matrix(int m, int n); // alloue une matrice de dimensions données
 BandMatrix * allocate_band_matrix(int m, int k); // alloue une matrice bande de dimensions données

@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "gmshc.h": "c",
+        "eigen.h": "c"
+    }
+}

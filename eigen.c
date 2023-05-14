@@ -14,7 +14,7 @@ void remove_bnd_lines (Matrix *K, Matrix *M, size_t *bnd_nodes, size_t n_bnd_nod
   size_t i_bnd = 0;
   size_t i_new = 0;
   for (size_t i=0; i<(int)(n/2); i++){
-    if (i == bnd_nodes[i_bnd]) {
+    if (i_bnd < n_bnd_nodes && i == bnd_nodes[i_bnd]) {
       i_bnd++;
       continue;
     }

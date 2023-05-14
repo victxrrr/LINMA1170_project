@@ -62,9 +62,19 @@ endif
 
 all: $(TARGET)
 
-linux_target: matrix.c lu.c elasticity.c eigen.c design.c project.c
-	$(CC) $(CFLAGS) -o $@ $^ -lm -Wno-unused-variable -Wno-unused-function ../gmsh-sdk/lib/libgmsh.so -Wl,-rpath,../gmsh-sdk/lib
-	./$@ 1.0 files/out.txt
+linux_target: matrix.c lu.c elasticity.c eigen.c design.c project_lapack.c dichotomous.c
+	$(CC) $(CFLAGS) -o $@ $^ -lm ../gmsh-sdk/lib/libgmsh.so -Wl,-rpath,../gmsh-sdk/lib -llapacke
+	./$@ 5 files/out.txt
+	rm -f $@
+
+debug: matrix.c lu.c elasticity.c eigen.c design.c project_lapack.c dichotomous.c
+	$(CC) -g $(CFLAGS) -o $@ $^ -lm ../gmsh-sdk/lib/libgmsh.so -Wl,-rpath,../gmsh-sdk/lib -llapacke
+	gdb ./$@
+	rm -f $@
+
+t: matrix.c lu.c elasticity.c eigen.c design.c project.c
+	$(CC) $(CFLAGS) -o $@ $^ -lm -Wno-unused-variable -Wno-unused-function ../gmsh-sdk/lib/libgmsh.so -Wl,-rpath,../gmsh-sdk/lib -llapacke
+	./$@ 2 files/out.txt
 	rm -f $@
 
 windows_target: matrix.c lu.c elasticity.c eigen.c design.c project.c

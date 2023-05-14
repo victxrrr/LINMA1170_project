@@ -178,7 +178,7 @@ void get_boundary_nodes (size_t** bnd_nTags, size_t* bnd_nTags_n){
     size_t  cc_n;
     if (strcmp(name,"clamped") == 0){
       gmshModelMeshGetNodesForPhysicalGroup(dimTags[i],dimTags[i+1], bnd_nTags, bnd_nTags_n, &cc, &cc_n, &ierr);
-      printf("clamped found physical group %d\n",dimTags[i+1]);
+      // printf("Info    : Clamped found physical group %d\n",dimTags[i+1]);
     }
     if (cc) free(cc);
     free (name);
