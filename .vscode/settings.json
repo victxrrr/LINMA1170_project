@@ -3,6 +3,7 @@
         "gmshc.h": "c",
         "eigen.h": "c",
         "stdio.h": "c",
-        "random": "c"
+        "random": "c",
+        "matrix.h": "c"
     }
 }

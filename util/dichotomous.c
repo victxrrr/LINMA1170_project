@@ -4,6 +4,9 @@
 #include "math.h"
 #include "dichotomous.h"
 
+/**
+ * @brief Multivariate dichotomous method to find the optimal parameters.
+*/
 double *polyDichotomous(double(*myFunction)(double *), double *a, double *b, int nParam, int nMax, double tol) {
 
     double *param = malloc(nParam*sizeof(double));
@@ -17,8 +20,10 @@ double *polyDichotomous(double(*myFunction)(double *), double *a, double *b, int
     }
 
     int nIter = 1;
-    while (nIter < nMax && fabs(f) > tol) {
-        for (int i=0; i<nParam; i++) {
+    while (nIter < nMax && fabs(f) > tol) 
+    {
+        for (int i=0; i<nParam; i++) 
+        {
             param[i] = (a[i] + b[i]) / 2;
             f = myFunction(param);
             if (fabs(f) <= tol) break;
@@ -35,15 +40,22 @@ double *polyDichotomous(double(*myFunction)(double *), double *a, double *b, int
     return param;
 }
 
-void getDichotomousParam(double *param, double *intervalBound1, double *intervalBound2, int nParam) {
-    for (int i=0; i<nParam; i++) {
+/**
+ * @brief Updating the parameters for the dichotomous method.
+*/
+void getDichotomousParam(double *param, double *intervalBound1, double *intervalBound2, int nParam) 
+{
+    for (int i=0; i<nParam; i++) 
+    {
         param[i] = (intervalBound1[i] + intervalBound2[i]) / 2;
     }
 }
 
-
-double *dichotomous(double(*myFunction)(double *), double *intervalBound1, double *intervalBound2, int nParam, int nMax, double tol) {
-
+/**
+ * @brief Dichotomous method to find the optimal parameters.
+*/
+double *dichotomous(double(*myFunction)(double *), double *intervalBound1, double *intervalBound2, int nParam, int nMax, double tol) 
+{
     // Getting the initial parameters.
     double *param = malloc(nParam*sizeof(double));
     getDichotomousParam(param, intervalBound1, intervalBound2, nParam);
@@ -51,11 +63,14 @@ double *dichotomous(double(*myFunction)(double *), double *intervalBound1, doubl
 
     // Finding the optimal parameters.
     int nIter = 0;
-    while (nIter < nMax && fabs(currentEval) > tol) {
+    while (nIter < nMax && fabs(currentEval) > tol) 
+    {
         // Updating the interval bounds.
-        if (currentEval*myFunction(intervalBound1) > 0) {
+        if (currentEval*myFunction(intervalBound1) > 0) 
+        {
             memcpy(intervalBound1, param, nParam*sizeof(double));
-        } else {
+        } else 
+        {
             memcpy(intervalBound2, param, nParam*sizeof(double));
         }
         // Updating parameters.
@@ -64,19 +79,23 @@ double *dichotomous(double(*myFunction)(double *), double *intervalBound1, doubl
         nIter++;
     }
 
-    //fprintf(stderr, "The number of iteration is : %d\n", nIter);
+    fprintf(stderr, "The number of iteration is : %d\n", nIter);
 
     return param;
 }
 
-
+/**
+ * @brief Updating the parameters for the secant method.
+*/
 void getSecantParam(double *exParam, double *currentParam, double *newParam, double exEval, double currentEval, int nParam) {
     for (int i=0; i<nParam; i++) {
         newParam[i] = currentParam[i] - currentEval * (currentParam[i]-exParam[i]) / (currentEval-exEval);
     }
 }
 
-
+/**
+ * @brief Finding the initial parameters for the secant method from the dichotomous method.
+*/
 double *loadSecantInitParam(double *param0, double *param1, double(*myFunction)(double *), double *intervalBound1, double *intervalBound2, int nParam, int nMax) {
     
     // Initialize the array to return.
@@ -103,12 +122,14 @@ double *loadSecantInitParam(double *param0, double *param1, double(*myFunction)(
         nIter++;
     }
 
-    //fprintf(stderr, "The number of iteration is : %d\n", nIter);
+    fprintf(stderr, "The number of iteration is : %d\n", nIter);
 
     return evals;
 }
 
-
+/**
+ * @brief Secant method to find the optimal parameters.
+*/
 double *secant(double(*myFunction)(double *), double *param0, double *param1, double eval0, double eval1, int nParam, int nMax, double tol) {
 
     // Setting the initial parameters.
@@ -134,16 +155,3 @@ double *secant(double(*myFunction)(double *), double *param0, double *param1, do
     
     return newParam;
 }
-
-// double f(double *param) {
-//     return param[0]*param[0] + param[1]*param[1] - 1;
-// }
-// int main() {
-
-//     double a[2] = {0, 0};
-//     double b[2] = {2, 2};
-
-//     double *param = dichotomous(f, a, b, 2, 100, 0.0001);
-
-//     printf("The optimal parameters are : %f, %f\n", param[0], param[1]);
-// }

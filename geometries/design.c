@@ -2,112 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+// CHANGE THIS TO THE CORRECT PATH
 #ifdef __linux__
   #include "../../gmsh-sdk/include/gmshc.h"
 #else
   #include "gmshc.h"
 #endif
-
-void designTuningForkCustom(double l, double meshSizeFactor, char * filename) {
-  /**
-   * r1 = inner radius (half-distance between prongs)
-   * r2 = outer radius (half-width of fork)
-   * e  = length of handle
-   * l  = length of prongs
-   * meshSizeFactor = meshSize / width of prongs
-   * if `filename` is not NULL, save to file
-  */
-  
-  int ierr;
-
-  gmshClear(&ierr);
-
-  double h, r1, r2, e; // width of prongs
-  e = 25e-3;
-  h = 7e-3;
-  r1 = 7e-3;
-  r2 = r1 + h;
-  double meshSize = 4 * h * meshSizeFactor;
-
-  // Add points
-  double x = 0;
-  double y = 0;
-  double z = 0;
-  gmshModelOccAddPoint(x,y,z,meshSize,1,&ierr);
-  x += h;
-  gmshModelOccAddPoint(x,y,z,meshSize,2,&ierr);
-  y += e;
-  gmshModelOccAddPoint(x,y,z,meshSize,3,&ierr);
-  x += r2;
-  y += r2;
-  gmshModelOccAddPoint(x,y,z,meshSize,4,&ierr);
-  y += l;
-  gmshModelOccAddPoint(x,y,z,meshSize,5,&ierr);
-  x -= h;
-  gmshModelOccAddPoint(x,y,z,meshSize,6,&ierr);
-  y -= l;
-  gmshModelOccAddPoint(x,y,z,meshSize,7,&ierr);
-  x -= r1;
-  y -= r1;
-  gmshModelOccAddPoint(x,y,z,meshSize,8,&ierr);
-  x -= h;
-  gmshModelOccAddPoint(x,y,z,meshSize,9,&ierr);
-  x -= r1;
-  y += r1;
-  gmshModelOccAddPoint(x,y,z,meshSize,10,&ierr);
-  y += l;
-  gmshModelOccAddPoint(x,y,z,meshSize,11,&ierr);
-  x -= h;
-  gmshModelOccAddPoint(x,y,z,meshSize,12,&ierr);
-  y -= l;
-  gmshModelOccAddPoint(x,y,z,meshSize,13,&ierr);
-  x += r2;
-  y -= r2;
-  gmshModelOccAddPoint(x,y,z,meshSize,14,&ierr);
-  y += (h+r1);
-  gmshModelOccAddPoint(x,y,z,meshSize,15,&ierr);
-  x += h;
-  gmshModelOccAddPoint(x,y,z,meshSize,16,&ierr);
-  
-  // Add curves
-  gmshModelOccAddLine(1,2,1,&ierr);
-  gmshModelOccAddLine(2,3,2,&ierr);
-  gmshModelOccAddCircleArc(3,16,4,3,&ierr);
-  gmshModelOccAddLine(4,5,4,&ierr);
-  gmshModelOccAddLine(5,6,5,&ierr);
-  gmshModelOccAddLine(6,7,6,&ierr);
-  gmshModelOccAddCircleArc(7,16,8,7,&ierr);
-  gmshModelOccAddLine(8,9,8,&ierr);
-  gmshModelOccAddCircleArc(9,15,10,9,&ierr);
-  gmshModelOccAddLine(10,11,10,&ierr);
-  gmshModelOccAddLine(11,12,11,&ierr);
-  gmshModelOccAddLine(12,13,12,&ierr);
-  gmshModelOccAddCircleArc(13,15,14,13,&ierr);
-  gmshModelOccAddLine(14,1,14,&ierr);
-
-  // Add wire (closed curve)
-  int curveTags[14] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
-  gmshModelOccAddWire(curveTags, 14, 1, 1, &ierr);
-
-  // Add surface
-  int wireTags[1] = {1};
-  gmshModelOccAddPlaneSurface(wireTags, 1, 100, &ierr);
-
-  // Sync
-  gmshModelOccSynchronize(&ierr);
-
-  // Create physical group for surface
-  int surfaceTags[1] = {100};
-  gmshModelAddPhysicalGroup(2, surfaceTags, 1, -1, "bulk", &ierr);
-
-  // Create physical group for clamped curves
-  int clampedCurveTags[3] = {1, 2, 14};
-  gmshModelAddPhysicalGroup(1, clampedCurveTags, 3, -1, "clamped", &ierr);
-
-  gmshModelMeshGenerate(2, &ierr);
-
-  if(filename != NULL) gmshWrite(filename, &ierr);
-}
 
 void designTuningFork(double r1, double r2, double e, double l, double meshSizeFactor, char * filename) {
   /**
@@ -206,11 +107,9 @@ void designTuningFork(double r1, double r2, double e, double l, double meshSizeF
   if(filename != NULL) gmshWrite(filename, &ierr);
 }
 
-void designHalfTuningFork2D(double r2, double l, double meshSizeFactor, char * filename) {
+void designHalfTuningFork(double r1, double r2, double e, double l, double meshSizeFactor, char * filename) {
   int ierr;
   gmshClear(&ierr);
-  double r1 = 4e-3;
-  double e = 3e-2;
   double h = r2 - r1; // width of prongs
   double meshSize = h * meshSizeFactor;
   double x = h/2, y = 0, z = 0;
@@ -269,103 +168,6 @@ void designHalfTuningFork2D(double r2, double l, double meshSizeFactor, char * f
 
   if(filename != NULL) gmshWrite(filename, &ierr);
 }
-void designTuningFork3(double r1, double r2, double e, double l, double meshSizeFactor, char * filename) {
-  /**
-   * r1 = inner radius (half-distance between prongs)
-   * r2 = outer radius (half-width of fork)
-   * e  = length of handle
-   * l  = length of prongs
-   * meshSizeFactor = meshSize / width of prongs
-   * if `filename` is not NULL, save to file
-  */
-  
-  int ierr;
-
-  gmshClear(&ierr);
-
-  double h = r1 - r2; // width of prongs
-  double meshSize = 4 * h * meshSizeFactor;
-
-  // Add points
-  double x = 0;
-  double y = 0;
-  double z = 0;
-  gmshModelOccAddPoint(x,y,z,meshSize,1,&ierr);
-  x += h;
-  gmshModelOccAddPoint(x,y,z,meshSize,2,&ierr);
-  y += e;
-  gmshModelOccAddPoint(x,y,z,meshSize,3,&ierr);
-  x += r2;
-  y += r2;
-  gmshModelOccAddPoint(x,y,z,meshSize,4,&ierr);
-  y += l;
-  gmshModelOccAddPoint(x,y,z,meshSize,5,&ierr);
-  x -= h;
-  gmshModelOccAddPoint(x,y,z,meshSize,6,&ierr);
-  y -= l;
-  gmshModelOccAddPoint(x,y,z,meshSize,7,&ierr);
-  x -= r1;
-  y -= r1;
-  gmshModelOccAddPoint(x,y,z,meshSize,8,&ierr);
-  x -= h;
-  gmshModelOccAddPoint(x,y,z,meshSize,9,&ierr);
-  x -= r1;
-  y += r1;
-  gmshModelOccAddPoint(x,y,z,meshSize,10,&ierr);
-  y += l;
-  gmshModelOccAddPoint(x,y,z,meshSize,11,&ierr);
-  x -= h;
-  gmshModelOccAddPoint(x,y,z,meshSize,12,&ierr);
-  y -= l;
-  gmshModelOccAddPoint(x,y,z,meshSize,13,&ierr);
-  x += r2;
-  y -= r2;
-  gmshModelOccAddPoint(x,y,z,meshSize,14,&ierr);
-  y += (h+r1);
-  gmshModelOccAddPoint(x,y,z,meshSize,15,&ierr);
-  x += h;
-  gmshModelOccAddPoint(x,y,z,meshSize,16,&ierr);
-  
-  // Add curves
-  gmshModelOccAddLine(1,2,1,&ierr);
-  gmshModelOccAddLine(2,3,2,&ierr);
-  gmshModelOccAddCircleArc(3,16,4,3,&ierr);
-  gmshModelOccAddLine(4,5,4,&ierr);
-  gmshModelOccAddLine(5,6,5,&ierr);
-  gmshModelOccAddLine(6,7,6,&ierr);
-  gmshModelOccAddCircleArc(7,16,8,7,&ierr);
-  gmshModelOccAddLine(8,9,8,&ierr);
-  gmshModelOccAddCircleArc(9,15,10,9,&ierr);
-  gmshModelOccAddLine(10,11,10,&ierr);
-  gmshModelOccAddLine(11,12,11,&ierr);
-  gmshModelOccAddLine(12,13,12,&ierr);
-  gmshModelOccAddCircleArc(13,15,14,13,&ierr);
-  gmshModelOccAddLine(14,1,14,&ierr);
-
-  // Add wire (closed curve)
-  int curveTags[14] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
-  gmshModelOccAddWire(curveTags, 14, 1, 1, &ierr);
-
-  // Add surface
-  int wireTags[1] = {1};
-  gmshModelOccAddPlaneSurface(wireTags, 1, 100, &ierr);
-
-  // Sync
-  gmshModelOccSynchronize(&ierr);
-
-  // Create physical group for surface
-  int surfaceTags[1] = {100};
-  gmshModelAddPhysicalGroup(2, surfaceTags, 1, -1, "bulk", &ierr);
-
-  // Create physical group for clamped curves
-  int clampedCurveTags[3] = {1, 2, 14};
-  gmshModelAddPhysicalGroup(1, clampedCurveTags, 3, -1, "clamped", &ierr);
-
-  gmshModelMeshGenerate(2, &ierr);
-
-  if(filename != NULL) gmshWrite(filename, &ierr);
-}
-
 
 void designHalfTuningFork1D(double l, double meshSizeFactor, char * filename) {
   int ierr;
@@ -432,9 +234,11 @@ void designHalfTuningFork1D(double l, double meshSizeFactor, char * filename) {
   if(filename != NULL) gmshWrite(filename, &ierr);
 }
 
-void designHalfTuningFork(double r1, double r2, double e, double l, double meshSizeFactor, char * filename) {
+void designHalfTuningFork2D(double r2, double l, double meshSizeFactor, char * filename) {
   int ierr;
   gmshClear(&ierr);
+  double r1 = 4e-3;
+  double e = 3e-2;
   double h = r2 - r1; // width of prongs
   double meshSize = h * meshSizeFactor;
   double x = h/2, y = 0, z = 0;
@@ -494,189 +298,7 @@ void designHalfTuningFork(double r1, double r2, double e, double l, double meshS
   if(filename != NULL) gmshWrite(filename, &ierr);
 }
 
-void customHalfTuningFork(double r1, double r2, double r3, double e, double l1, double l2, double meshSizeFactor, char * filename) {
-
-  int ierr;
-
-  gmshClear(&ierr);
-
-  double h = r2 - r1; // width of prongs
-  double r4 = r3 + h; // outer radius of upper circle
-  double meshSize = h * meshSizeFactor;
-  
-  double x = h/2, y = 0, z = 0;
-
-  gmshModelOccAddPoint(x,y,z,meshSize,1,&ierr);
-  x += h/2;
-  gmshModelOccAddPoint(x,y,z,meshSize,2,&ierr);
-  y += e;
-  gmshModelOccAddPoint(x,y,z,meshSize,3,&ierr);
-  x += r2;
-  y += r2;
-  gmshModelOccAddPoint(x,y,z,meshSize,4,&ierr);
-  y += l1;
-  gmshModelOccAddPoint(x,y,z,meshSize,5,&ierr);
-  x += r3;
-  gmshModelOccAddPoint(x,y,z,meshSize,6,&ierr);
-  y += r3;
-  gmshModelOccAddPoint(x,y,z,meshSize,7,&ierr);
-  x += r3;
-  y -= r3;
-  gmshModelOccAddPoint(x,y,z,meshSize,8,&ierr);
-  y -= l2;
-  gmshModelOccAddPoint(x,y,z,meshSize,9,&ierr);
-  x += h;
-  gmshModelOccAddPoint(x,y,z,meshSize,10,&ierr);
-  y += l2;
-  gmshModelOccAddPoint(x,y,z,meshSize,11,&ierr);
-  x -= r4;
-  y += r4;
-  gmshModelOccAddPoint(x,y,z,meshSize,12,&ierr);
-  x -= r4;
-  y -= r4;
-  gmshModelOccAddPoint(x,y,z,meshSize,13,&ierr);
-  y -= l1;
-  gmshModelOccAddPoint(x,y,z,meshSize,14,&ierr);
-  x -= r1;
-  y -= r1;
-  gmshModelOccAddPoint(x,y,z,meshSize,15,&ierr);
-  x -= h/2;
-  gmshModelOccAddPoint(x,y,z,meshSize,16,&ierr);
-  x += h/2;
-  y += r1;
-  gmshModelOccAddPoint(x,y,z,meshSize,17,&ierr);
-
-  gmshModelOccAddLine(1,2,1,&ierr);
-  gmshModelOccAddLine(2,3,2,&ierr);
-  gmshModelOccAddCircleArc(3,17,4,3,&ierr);
-  gmshModelOccAddLine(4,5,4,&ierr);
-  gmshModelOccAddCircleArc(5,6,7,5,&ierr);
-  gmshModelOccAddCircleArc(7,6,8,6,&ierr);
-  gmshModelOccAddLine(8,9,7,&ierr);
-  gmshModelOccAddLine(9,10,8,&ierr);
-  gmshModelOccAddLine(10,11,9,&ierr);
-  gmshModelOccAddCircleArc(11,6,12,10,&ierr);
-  gmshModelOccAddCircleArc(12,6,13,11,&ierr);
-  gmshModelOccAddLine(13,14,12,&ierr);
-  gmshModelOccAddCircleArc(14,17,15,13,&ierr);
-  gmshModelOccAddLine(15,16,14,&ierr);
-  gmshModelOccAddLine(16,1,15,&ierr);
-
-  int curveTags[15] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-  gmshModelOccAddWire(curveTags, 15, 1, 1, &ierr);
-
-  int wireTags[1] = {1};
-  gmshModelOccAddPlaneSurface(wireTags, 1, 100, &ierr);
-
-  gmshModelOccSynchronize(&ierr);
-
-  int surfaceTags[1] = {100};
-  gmshModelAddPhysicalGroup(2, surfaceTags, 1, -1, "bulk", &ierr);
-
-  int clampedCurveTags[3] = {1, 2};
-  gmshModelAddPhysicalGroup(1, clampedCurveTags, 2, -1, "clamped", &ierr);
-
-  int symmetryCurveTags[1] = {15};
-  gmshModelAddPhysicalGroup(1, symmetryCurveTags, 1, -1, "symmetry", &ierr);
-
-  gmshModelMeshGenerate(2, &ierr);
-
-  if(filename != NULL) gmshWrite(filename, &ierr);
-}
-
-void customHalfTuningFork2(double r2, double e, double l1, double l2, double meshSizeFactor, char * filename) {
-
-  int ierr;
-
-  gmshClear(&ierr);
-  double r1 = 3e-3;
-  double r3 = 3e-3;
-
-  double h = r2 - r1; // width of prongs
-  double r4 = r3 + h; // outer radius of upper circle
-  double meshSize = h * meshSizeFactor;
-  
-  double x = h/2, y = 0, z = 0;
-
-  gmshModelOccAddPoint(x,y,z,meshSize,1,&ierr);
-  x += h/2;
-  gmshModelOccAddPoint(x,y,z,meshSize,2,&ierr);
-  y += e;
-  gmshModelOccAddPoint(x,y,z,meshSize,3,&ierr);
-  x += r2;
-  y += r2;
-  gmshModelOccAddPoint(x,y,z,meshSize,4,&ierr);
-  y += l1;
-  gmshModelOccAddPoint(x,y,z,meshSize,5,&ierr);
-  x += r3;
-  gmshModelOccAddPoint(x,y,z,meshSize,6,&ierr);
-  y += r3;
-  gmshModelOccAddPoint(x,y,z,meshSize,7,&ierr);
-  x += r3;
-  y -= r3;
-  gmshModelOccAddPoint(x,y,z,meshSize,8,&ierr);
-  y -= l2;
-  gmshModelOccAddPoint(x,y,z,meshSize,9,&ierr);
-  x += h;
-  gmshModelOccAddPoint(x,y,z,meshSize,10,&ierr);
-  y += l2;
-  gmshModelOccAddPoint(x,y,z,meshSize,11,&ierr);
-  x -= r4;
-  y += r4;
-  gmshModelOccAddPoint(x,y,z,meshSize,12,&ierr);
-  x -= r4;
-  y -= r4;
-  gmshModelOccAddPoint(x,y,z,meshSize,13,&ierr);
-  y -= l1;
-  gmshModelOccAddPoint(x,y,z,meshSize,14,&ierr);
-  x -= r1;
-  y -= r1;
-  gmshModelOccAddPoint(x,y,z,meshSize,15,&ierr);
-  x -= h/2;
-  gmshModelOccAddPoint(x,y,z,meshSize,16,&ierr);
-  x += h/2;
-  y += r1;
-  gmshModelOccAddPoint(x,y,z,meshSize,17,&ierr);
-
-  gmshModelOccAddLine(1,2,1,&ierr);
-  gmshModelOccAddLine(2,3,2,&ierr);
-  gmshModelOccAddCircleArc(3,17,4,3,&ierr);
-  gmshModelOccAddLine(4,5,4,&ierr);
-  gmshModelOccAddCircleArc(5,6,7,5,&ierr);
-  gmshModelOccAddCircleArc(7,6,8,6,&ierr);
-  gmshModelOccAddLine(8,9,7,&ierr);
-  gmshModelOccAddLine(9,10,8,&ierr);
-  gmshModelOccAddLine(10,11,9,&ierr);
-  gmshModelOccAddCircleArc(11,6,12,10,&ierr);
-  gmshModelOccAddCircleArc(12,6,13,11,&ierr);
-  gmshModelOccAddLine(13,14,12,&ierr);
-  gmshModelOccAddCircleArc(14,17,15,13,&ierr);
-  gmshModelOccAddLine(15,16,14,&ierr);
-  gmshModelOccAddLine(16,1,15,&ierr);
-
-  int curveTags[15] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-  gmshModelOccAddWire(curveTags, 15, 1, 1, &ierr);
-
-  int wireTags[1] = {1};
-  gmshModelOccAddPlaneSurface(wireTags, 1, 100, &ierr);
-
-  gmshModelOccSynchronize(&ierr);
-
-  int surfaceTags[1] = {100};
-  gmshModelAddPhysicalGroup(2, surfaceTags, 1, -1, "bulk", &ierr);
-
-  int clampedCurveTags[3] = {1, 2};
-  gmshModelAddPhysicalGroup(1, clampedCurveTags, 2, -1, "clamped", &ierr);
-
-  int symmetryCurveTags[1] = {15};
-  gmshModelAddPhysicalGroup(1, symmetryCurveTags, 1, -1, "symmetry", &ierr);
-
-  gmshModelMeshGenerate(2, &ierr);
-
-  if(filename != NULL) gmshWrite(filename, &ierr);
-}
-
-void chandelier(double r1, double r2, double r3, double e, double l1, double l2, double meshSizeFactor, char * filename) {
+void customTuningFork(double r1, double r2, double r3, double e, double l1, double l2, double meshSizeFactor, char * filename) {
   /**
    * r1 = inner radius of lower circle (half-distance between prongs)
    * r2 = outer radius of lower circle (half-width of fork)
@@ -835,6 +457,188 @@ void chandelier(double r1, double r2, double r3, double e, double l1, double l2,
   // Create physical group for clamped curves
   int clampedCurveTags[3] = {1, 2, 14};
   gmshModelAddPhysicalGroup(1, clampedCurveTags, 3, -1, "clamped", &ierr);
+
+  gmshModelMeshGenerate(2, &ierr);
+
+  if(filename != NULL) gmshWrite(filename, &ierr);
+}
+
+void customHalfTuningFork(double r2, double e, double l1, double l2, double meshSizeFactor, char * filename) {
+
+  int ierr;
+
+  gmshClear(&ierr);
+  double r1 = 3e-3;
+  double r3 = 3e-3;
+
+  double h = r2 - r1; // width of prongs
+  double r4 = r3 + h; // outer radius of upper circle
+  double meshSize = h * meshSizeFactor;
+  
+  double x = h/2, y = 0, z = 0;
+
+  gmshModelOccAddPoint(x,y,z,meshSize,1,&ierr);
+  x += h/2;
+  gmshModelOccAddPoint(x,y,z,meshSize,2,&ierr);
+  y += e;
+  gmshModelOccAddPoint(x,y,z,meshSize,3,&ierr);
+  x += r2;
+  y += r2;
+  gmshModelOccAddPoint(x,y,z,meshSize,4,&ierr);
+  y += l1;
+  gmshModelOccAddPoint(x,y,z,meshSize,5,&ierr);
+  x += r3;
+  gmshModelOccAddPoint(x,y,z,meshSize,6,&ierr);
+  y += r3;
+  gmshModelOccAddPoint(x,y,z,meshSize,7,&ierr);
+  x += r3;
+  y -= r3;
+  gmshModelOccAddPoint(x,y,z,meshSize,8,&ierr);
+  y -= l2;
+  gmshModelOccAddPoint(x,y,z,meshSize,9,&ierr);
+  x += h;
+  gmshModelOccAddPoint(x,y,z,meshSize,10,&ierr);
+  y += l2;
+  gmshModelOccAddPoint(x,y,z,meshSize,11,&ierr);
+  x -= r4;
+  y += r4;
+  gmshModelOccAddPoint(x,y,z,meshSize,12,&ierr);
+  x -= r4;
+  y -= r4;
+  gmshModelOccAddPoint(x,y,z,meshSize,13,&ierr);
+  y -= l1;
+  gmshModelOccAddPoint(x,y,z,meshSize,14,&ierr);
+  x -= r1;
+  y -= r1;
+  gmshModelOccAddPoint(x,y,z,meshSize,15,&ierr);
+  x -= h/2;
+  gmshModelOccAddPoint(x,y,z,meshSize,16,&ierr);
+  x += h/2;
+  y += r1;
+  gmshModelOccAddPoint(x,y,z,meshSize,17,&ierr);
+
+  gmshModelOccAddLine(1,2,1,&ierr);
+  gmshModelOccAddLine(2,3,2,&ierr);
+  gmshModelOccAddCircleArc(3,17,4,3,&ierr);
+  gmshModelOccAddLine(4,5,4,&ierr);
+  gmshModelOccAddCircleArc(5,6,7,5,&ierr);
+  gmshModelOccAddCircleArc(7,6,8,6,&ierr);
+  gmshModelOccAddLine(8,9,7,&ierr);
+  gmshModelOccAddLine(9,10,8,&ierr);
+  gmshModelOccAddLine(10,11,9,&ierr);
+  gmshModelOccAddCircleArc(11,6,12,10,&ierr);
+  gmshModelOccAddCircleArc(12,6,13,11,&ierr);
+  gmshModelOccAddLine(13,14,12,&ierr);
+  gmshModelOccAddCircleArc(14,17,15,13,&ierr);
+  gmshModelOccAddLine(15,16,14,&ierr);
+  gmshModelOccAddLine(16,1,15,&ierr);
+
+  int curveTags[15] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+  gmshModelOccAddWire(curveTags, 15, 1, 1, &ierr);
+
+  int wireTags[1] = {1};
+  gmshModelOccAddPlaneSurface(wireTags, 1, 100, &ierr);
+
+  gmshModelOccSynchronize(&ierr);
+
+  int surfaceTags[1] = {100};
+  gmshModelAddPhysicalGroup(2, surfaceTags, 1, -1, "bulk", &ierr);
+
+  int clampedCurveTags[3] = {1, 2};
+  gmshModelAddPhysicalGroup(1, clampedCurveTags, 2, -1, "clamped", &ierr);
+
+  int symmetryCurveTags[1] = {15};
+  gmshModelAddPhysicalGroup(1, symmetryCurveTags, 1, -1, "symmetry", &ierr);
+
+  gmshModelMeshGenerate(2, &ierr);
+
+  if(filename != NULL) gmshWrite(filename, &ierr);
+}
+
+void customHalfTuningForkFull(double r1, double r2, double r3, double e, double l1, double l2, double meshSizeFactor, char * filename) {
+
+  int ierr;
+
+  gmshClear(&ierr);
+
+  double h = r2 - r1; // width of prongs
+  double r4 = r3 + h; // outer radius of upper circle
+  double meshSize = h * meshSizeFactor;
+  
+  double x = h/2, y = 0, z = 0;
+
+  gmshModelOccAddPoint(x,y,z,meshSize,1,&ierr);
+  x += h/2;
+  gmshModelOccAddPoint(x,y,z,meshSize,2,&ierr);
+  y += e;
+  gmshModelOccAddPoint(x,y,z,meshSize,3,&ierr);
+  x += r2;
+  y += r2;
+  gmshModelOccAddPoint(x,y,z,meshSize,4,&ierr);
+  y += l1;
+  gmshModelOccAddPoint(x,y,z,meshSize,5,&ierr);
+  x += r3;
+  gmshModelOccAddPoint(x,y,z,meshSize,6,&ierr);
+  y += r3;
+  gmshModelOccAddPoint(x,y,z,meshSize,7,&ierr);
+  x += r3;
+  y -= r3;
+  gmshModelOccAddPoint(x,y,z,meshSize,8,&ierr);
+  y -= l2;
+  gmshModelOccAddPoint(x,y,z,meshSize,9,&ierr);
+  x += h;
+  gmshModelOccAddPoint(x,y,z,meshSize,10,&ierr);
+  y += l2;
+  gmshModelOccAddPoint(x,y,z,meshSize,11,&ierr);
+  x -= r4;
+  y += r4;
+  gmshModelOccAddPoint(x,y,z,meshSize,12,&ierr);
+  x -= r4;
+  y -= r4;
+  gmshModelOccAddPoint(x,y,z,meshSize,13,&ierr);
+  y -= l1;
+  gmshModelOccAddPoint(x,y,z,meshSize,14,&ierr);
+  x -= r1;
+  y -= r1;
+  gmshModelOccAddPoint(x,y,z,meshSize,15,&ierr);
+  x -= h/2;
+  gmshModelOccAddPoint(x,y,z,meshSize,16,&ierr);
+  x += h/2;
+  y += r1;
+  gmshModelOccAddPoint(x,y,z,meshSize,17,&ierr);
+
+  gmshModelOccAddLine(1,2,1,&ierr);
+  gmshModelOccAddLine(2,3,2,&ierr);
+  gmshModelOccAddCircleArc(3,17,4,3,&ierr);
+  gmshModelOccAddLine(4,5,4,&ierr);
+  gmshModelOccAddCircleArc(5,6,7,5,&ierr);
+  gmshModelOccAddCircleArc(7,6,8,6,&ierr);
+  gmshModelOccAddLine(8,9,7,&ierr);
+  gmshModelOccAddLine(9,10,8,&ierr);
+  gmshModelOccAddLine(10,11,9,&ierr);
+  gmshModelOccAddCircleArc(11,6,12,10,&ierr);
+  gmshModelOccAddCircleArc(12,6,13,11,&ierr);
+  gmshModelOccAddLine(13,14,12,&ierr);
+  gmshModelOccAddCircleArc(14,17,15,13,&ierr);
+  gmshModelOccAddLine(15,16,14,&ierr);
+  gmshModelOccAddLine(16,1,15,&ierr);
+
+  int curveTags[15] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+  gmshModelOccAddWire(curveTags, 15, 1, 1, &ierr);
+
+  int wireTags[1] = {1};
+  gmshModelOccAddPlaneSurface(wireTags, 1, 100, &ierr);
+
+  gmshModelOccSynchronize(&ierr);
+
+  int surfaceTags[1] = {100};
+  gmshModelAddPhysicalGroup(2, surfaceTags, 1, -1, "bulk", &ierr);
+
+  int clampedCurveTags[3] = {1, 2};
+  gmshModelAddPhysicalGroup(1, clampedCurveTags, 2, -1, "clamped", &ierr);
+
+  int symmetryCurveTags[1] = {15};
+  gmshModelAddPhysicalGroup(1, symmetryCurveTags, 1, -1, "symmetry", &ierr);
 
   gmshModelMeshGenerate(2, &ierr);
 

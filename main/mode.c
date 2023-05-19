@@ -26,15 +26,15 @@
 int main (int argc, char *argv[]) {
   clock_t start = clock();
 
-  // if (argc < 2){
-  //   printf("Usage: \n"
-	// 		"./project <k> <out>\n" 
-	// 		"---------------------------- \n\n"
-	// 		"- k is the number of frequencies to compute. \n "
-	// 		"- out is the output file to write the frequencies. \n "
-  //     "\n");
-	// 	return -1;
-  // } 
+  if (argc < 2){
+    printf("Usage: \n"
+			"./project <k> <out>\n" 
+			"---------------------------- \n\n"
+			"- k is the number of frequencies to compute. \n "
+			"- out is the output file to write the frequencies. \n "
+      "\n");
+		return -1;
+  } 
 
   // Define physical constants
   double E = 0.7e11;  // Young's modulus for Aluminum
@@ -64,14 +64,10 @@ int main (int argc, char *argv[]) {
 	// Initialize Gmsh and create geometry
   int ierr;
   gmshInitialize(argc, argv, 0, 0, &ierr);
-  // chandelier(5e-3, 10e-3, 15e-3, 10e-3, 5e-2, 3e-2, 0.9, NULL);
-  // halfCustomTuningFork(4e-3, 20e-3, 4e-3, 5e-2, 2e-2, 4e-2, .15, NULL);
-  // halfCustomTuningFork2(params[0], params[1], params[2], params[3], MESH_SIZE_FACTOR, NULL);
-  // designHalfTuningFork(50e-3, 100e-3, 3e-2, 10e-2, 1.0, NULL);
-  // designHalfTuningFork(6e-3, 11e-3, 38e-3, 82e-3, MESH_SIZE_FACTOR, NULL);
-  customHalfTuningFork2(params[0], params[1], params[2], params[3], MESH_SIZE_FACTOR, NULL);
-  // harmonic(params[0], params[1], params[2], params[3] + 1e-2, params[0]/2, params[1]/2, params[2]/2, params[3]/2, MESH_SIZE_FACTOR, NULL);
-  
+
+  // designHalfTuningFork(params[0], params[1], params[2], params[3], MESH_SIZE_FACTOR, NULL);
+  customHalfTuningFork(params[0], params[1], params[2], params[3], MESH_SIZE_FACTOR, NULL);
+
   // Number of vibration modes to find
   int k = atoi(argv[1]);
 
@@ -108,13 +104,10 @@ int main (int argc, char *argv[]) {
   Matrix * A = M_new; // alias for conciseness
   double * v = malloc(A->m * sizeof(double));
   double lambda, freq;
-  // FILE * file = fopen("../files/out.txt", "w"); //fopen(argv[2], "w"); // open file to write frequencies
- // FILE * file = fopen(argv[2], "w"); //fopen(argv[2], "w"); // open file to write frequencies
+
   for(int ki = 0; ki < k; ki++) {
     lambda = power_iteration(A, v);
     freq = 1./(2*M_PI*sqrt(lambda));
-
-    //fprintf(file, "%.9lf ", freq);
 
     printf("lambda = %.9e, f = %.3lf\n", lambda, freq);
     // Deflate matrix
@@ -139,7 +132,7 @@ int main (int argc, char *argv[]) {
       vall[2*(i)]   = v[iv++];
       vall[2*(i)+1] = v[iv++];
     }
-    if (ki == 0) visualize_in_gmsh(vall, K->m/2);
+    visualize_in_gmsh(vall, K->m/2);
     free(vall);
   }
 
