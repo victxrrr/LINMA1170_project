@@ -8,7 +8,7 @@
 Matrix * allocate_matrix(int m, int n) {
 	Matrix * mat = (Matrix*) malloc(sizeof(Matrix));
 	mat->m = m, mat->n = n;
-	mat->data = (double*) malloc(m*n*sizeof(double));
+	mat->data = (double*) calloc(m*n, sizeof(double));
 	mat->a = (double**) malloc(m*sizeof(double*));
 	for(int i = 0; i < m; i++)
 		mat->a[i] = mat->data+i*n;
@@ -82,4 +82,22 @@ int compute_permutation(int * perm, double * coord, int n_nodes) {
 		perm[i] = nodes[i].i;
 
 	return 0;
+}
+
+
+void matrix_to_csv(Matrix * A, char * filename) {
+    FILE *fp;
+    fp = fopen(filename, "w");
+    for (int i = 0; i < A->m; i++) {
+        for (int j = 0; j < A->n; j++) {
+            if (j==A->n-1) 
+				if (A->a[i][j] != 0) fprintf(fp, "%+.1e", A->a[i][j]);
+				else fprintf(fp, "        ");
+     		else 
+				if (A->a[i][j] != 0) fprintf(fp, "%+.1e  ", A->a[i][j]);
+				else fprintf(fp, "          ");
+        }
+        fprintf(fp, "\n");
+    }
+    fclose(fp);
 }

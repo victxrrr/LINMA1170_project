@@ -62,19 +62,23 @@ endif
 
 all: $(TARGET)
 
-linux_target: util/matrix.c util/lu.c util/elasticity.c util/eigen.c geometries/design.c project_lapack.c dichotomous.c
+linux_target: util/matrix.c util/lu.c util/elasticity.c util/eigen.c geometries/design.c main/project_lapack.c util/dichotomous.c util/nelderMead.c
 	$(CC) $(CFLAGS) -o $@ $^ -lm ../gmsh-sdk/lib/libgmsh.so -Wl,-rpath,../gmsh-sdk/lib -llapacke
-	./$@ 5 files/out.txt
+	./$@ 5 files/paramsHarmonic.txt
 	rm -f $@
 
-debug: matrix.c lu.c elasticity.c eigen.c design.c project_lapack.c dichotomous.c
+f: matrix.c lu.c elasticity.c eigen.c design.c test.c dichotomous.c
+	$(CC) $(CFLAGS) -o $@ $^ -lm ../gmsh-sdk/lib/libgmsh.so -Wl,-rpath,../gmsh-sdk/lib -llapacke
+
+debug: util/matrix.c util/lu.c util/elasticity.c util/eigen.c geometries/design.c main/project_lapack.c util/dichotomous.c util/nelderMead.c
 	$(CC) -g $(CFLAGS) -o $@ $^ -lm ../gmsh-sdk/lib/libgmsh.so -Wl,-rpath,../gmsh-sdk/lib -llapacke
-	gdb ./$@
+	gdb ./$@ 2 files/paramsHarmonic.txt
 	rm -f $@
 
-tmp: matrix.c lu.c elasticity.c eigen.c design.c project.c
+tmp: util/matrix.c util/lu.c util/elasticity.c util/eigen.c geometries/design.c main/project.c
 	$(CC) $(CFLAGS) -o $@ $^ -lm -Wno-unused-variable -Wno-unused-function ../gmsh-sdk/lib/libgmsh.so -Wl,-rpath,../gmsh-sdk/lib -llapacke
-	./$@ 2 files/out.txt
+	./$@ 2 files/paramsHarmonic.txt
+	rm -f $@
 
 windows_target: util/matrix.c util/lu.c util/elasticity.c util/eigen.c geometries/design.c main/project.c
 	$(CC) $(CFLAGS) -o $@ $^ -lm -Wno-unused-variable -Wno-unused-function ../gmsh-sdk/lib/gmsh-4.11.dll

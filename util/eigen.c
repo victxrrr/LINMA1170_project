@@ -4,24 +4,30 @@
 #include "eigen.h"
 
 // Remove lines and columns corresponding to boundary nodes from K and M
-void remove_bnd_lines (Matrix *K, Matrix *M, size_t *bnd_nodes, size_t n_bnd_nodes, Matrix **K_new, Matrix **M_new, int* invperm){
+void remove_bnd_lines (Matrix *K, Matrix *M, size_t *bnd_nodes, size_t n_bnd_nodes, size_t *sym_nodes, size_t n_sym_nodes, Matrix **K_new, Matrix **M_new, int* invperm){
   size_t n = K->n;
-  size_t n_new = K->n - 2*n_bnd_nodes;
+  size_t n_new = (n_sym_nodes > 0) ? K->n - 2*n_bnd_nodes - n_sym_nodes + 1 : K->n - 2*n_bnd_nodes; // node 0 is common to both boundaries
   *K_new = allocate_matrix(n_new, n_new);
   *M_new = allocate_matrix(n_new, n_new);
 
   size_t *new_lines = malloc(n_new * sizeof(size_t));
   size_t i_bnd = 0;
+  size_t i_sym = 1; // skip node 0 --vlepere
   size_t i_new = 0;
   for (size_t i=0; i<(int)(n/2); i++){
     if (i_bnd < n_bnd_nodes && i == bnd_nodes[i_bnd]) {
       i_bnd++;
       continue;
     }
-    new_lines[2*i_new  ] = 2*i;
-    new_lines[2*i_new+1] = 2*i+1;
-    i_new += 1;
+    if (i_sym < n_sym_nodes && i == sym_nodes[i_sym]) {
+      i_sym++;
+      new_lines[i_new++] = 2*i;
+      continue;
+    }
+    new_lines[i_new++] = 2*i;
+    new_lines[i_new++] = 2*i+1;
   }
+
   for (size_t i=0; i<n_new; i++){
     for (size_t j=0; j<n_new; j++){
       (*K_new)->a[i][j] = K->a[new_lines[i]][new_lines[j]];

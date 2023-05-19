@@ -40,4 +40,6 @@ void print_matrix(Matrix * A);          // imprime le contenu d'une matrice
 
 int is_symmetric(Matrix * K);
 
+void matrix_to_csv(Matrix * A, char * filename);
+
 #endif

@@ -4,7 +4,36 @@
 #include "math.h"
 #include "dichotomous.h"
 
+double *polyDichotomous(double(*myFunction)(double *), double *a, double *b, int nParam, int nMax, double tol) {
 
+    double *param = malloc(nParam*sizeof(double));
+    getDichotomousParam(param, a, b, nParam);
+    double f = myFunction(param);
+
+    if (f*myFunction(a) > 0) {
+        memcpy(a, param, nParam*sizeof(double));
+    } else {
+        memcpy(b, param, nParam*sizeof(double));
+    }
+
+    int nIter = 1;
+    while (nIter < nMax && fabs(f) > tol) {
+        for (int i=0; i<nParam; i++) {
+            param[i] = (a[i] + b[i]) / 2;
+            f = myFunction(param);
+            if (fabs(f) <= tol) break;
+            if (f*myFunction(a) > 0) {
+                memcpy(a, param, nParam*sizeof(double));
+            } else {
+                memcpy(b, param, nParam*sizeof(double));
+            }
+        }
+        nIter++;
+    }
+    fprintf(stderr, "The number of iteration is : %d\n", nIter*nParam);
+
+    return param;
+}
 
 void getDichotomousParam(double *param, double *intervalBound1, double *intervalBound2, int nParam) {
     for (int i=0; i<nParam; i++) {
@@ -101,7 +130,20 @@ double *secant(double(*myFunction)(double *), double *param0, double *param1, do
         nIter++;
     }
 
-    //fprintf(stderr, "The number of iteration is : %d\n", nIter);
+    fprintf(stderr, "The number of iteration is : %d\n", nIter);
     
     return newParam;
 }
+
+// double f(double *param) {
+//     return param[0]*param[0] + param[1]*param[1] - 1;
+// }
+// int main() {
+
+//     double a[2] = {0, 0};
+//     double b[2] = {2, 2};
+
+//     double *param = dichotomous(f, a, b, 2, 100, 0.0001);
+
+//     printf("The optimal parameters are : %f, %f\n", param[0], param[1]);
+// }
